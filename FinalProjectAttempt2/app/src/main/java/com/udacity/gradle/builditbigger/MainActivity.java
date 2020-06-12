@@ -1,13 +1,17 @@
 package com.udacity.gradle.builditbigger;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.example.displayjokes.DisplayJokesActivity;
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements EndpointsAsyncTask.AfterExecution{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +43,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void tellJoke(View view) {
-        new EndpointsAsyncTask().execute(this);
+        new EndpointsAsyncTask().execute(MainActivity.this);
     }
 
+    @Override
+    public void afterExecute(String joke) {
+        Log.d(EndpointsAsyncTask.class.getSimpleName(), "Result is " + joke);
 
+        //Pass joke to DisplayJokesActivity
+        Intent intent = new Intent(this, DisplayJokesActivity.class);
+        intent.putExtra(DisplayJokesActivity.JOKE_KEY, joke);
+        startActivity(intent);
+    }
 }

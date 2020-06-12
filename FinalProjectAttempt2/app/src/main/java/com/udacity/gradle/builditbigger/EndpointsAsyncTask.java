@@ -1,11 +1,7 @@
 package com.udacity.gradle.builditbigger;
 
-import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import com.example.displayjokes.DisplayJokesActivity;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.services.AbstractGoogleClientRequest;
@@ -14,12 +10,12 @@ import com.udacity.gradle.builditbigger.backend.myApi.MyApi;
 
 import java.io.IOException;
 
-class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
+class EndpointsAsyncTask extends AsyncTask<EndpointsAsyncTask.AfterExecution, Void, String> {
     private static MyApi myApiService = null;
-    private Context context;
+    private EndpointsAsyncTask.AfterExecution mCallback;
 
     @Override
-    protected String doInBackground(Context... params) {
+    protected String doInBackground(EndpointsAsyncTask.AfterExecution... params) {
         if(myApiService == null) {  // Only do this once
             MyApi.Builder builder = new MyApi.Builder(AndroidHttp.newCompatibleTransport(),
                     new AndroidJsonFactory(), null)
@@ -27,7 +23,7 @@ class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
                     // - 10.0.2.2 is localhost's IP address in Android emulator
                     // - turn off compression when running against local devappserver
                     .setRootUrl("http://10.0.2.2:8080/_ah/api/")
-                    .setApplicationName(params[0].getString(R.string.app_name))
+                    .setApplicationName("Build it Bigger")
                     .setGoogleClientRequestInitializer(new GoogleClientRequestInitializer() {
                         @Override
                         public void initialize(AbstractGoogleClientRequest<?> abstractGoogleClientRequest) throws IOException {
@@ -37,9 +33,9 @@ class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
             // end options for devappserver
 
             myApiService = builder.build();
+            mCallback = params[0];
         }
 
-        context = params[0];
 
         try {
             String data = myApiService.getJoke().execute().getData();
@@ -51,11 +47,10 @@ class EndpointsAsyncTask extends AsyncTask<Context, Void, String> {
 
     @Override
     protected void onPostExecute(String joke) {
-        Log.d(EndpointsAsyncTask.class.getSimpleName(), "Result is " + joke);
+        mCallback.afterExecute(joke);
+    }
 
-        //Pass joke to DisplayJokesActivity
-        Intent intent = new Intent(context, DisplayJokesActivity.class);
-        intent.putExtra(DisplayJokesActivity.JOKE_KEY, joke);
-        context.startActivity(intent);
+    public interface AfterExecution{
+        void afterExecute(String string);
     }
 }
