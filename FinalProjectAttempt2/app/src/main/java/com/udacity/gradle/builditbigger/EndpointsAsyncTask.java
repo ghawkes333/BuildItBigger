@@ -1,6 +1,7 @@
 package com.udacity.gradle.builditbigger;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
@@ -13,6 +14,8 @@ import java.io.IOException;
 class EndpointsAsyncTask extends AsyncTask<EndpointsAsyncTask.AfterExecution, Void, String> {
     private static MyApi myApiService = null;
     private EndpointsAsyncTask.AfterExecution mCallback;
+
+    private final static String TAG = EndpointsAsyncTask.class.getSimpleName();
 
     @Override
     protected String doInBackground(EndpointsAsyncTask.AfterExecution... params) {
@@ -32,9 +35,9 @@ class EndpointsAsyncTask extends AsyncTask<EndpointsAsyncTask.AfterExecution, Vo
             // end options for devappserver
 
             myApiService = builder.build();
-            mCallback = params[0];
         }
 
+        mCallback = params[0];
 
         try {
             String data = myApiService.getJoke().execute().getData();
@@ -46,7 +49,11 @@ class EndpointsAsyncTask extends AsyncTask<EndpointsAsyncTask.AfterExecution, Vo
 
     @Override
     protected void onPostExecute(String joke) {
-        mCallback.afterExecute(joke);
+        if(mCallback != null){
+            mCallback.afterExecute(joke);
+        } else{
+            Log.i(TAG, "Callback is null");
+        }
     }
 
     public interface AfterExecution{
